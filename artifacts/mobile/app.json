@@ -3,9 +3,10 @@
     "name": "Image Intelligence",
     "slug": "mobile",
     "version": "1.0.0",
+    "runtimeVersion": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mobile",
+    "scheme": "imageintelligence",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
@@ -14,9 +15,39 @@
       "backgroundColor": "#0D1117"
     },
     "ios": {
-      "supportsTablet": false
+      "supportsTablet": false,
+      "bundleIdentifier": "com.imageintelligence.app",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Used to geotag photos captured in-app. Never tracked in the background.",
+        "NSPhotoLibraryUsageDescription": "Required to import photos for AI analysis. Images are stored locally on device.",
+        "NSCameraUsageDescription": "Required to capture photos for AI analysis. Images are stored locally on device."
+      }
     },
-    "android": {},
+    "android": {
+      "package": "com.imageintelligence.app",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#0D1117"
+      },
+      "permissions": [
+        "android.permission.CAMERA",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE",
+        "android.permission.VIBRATE"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_CONTACTS",
+        "android.permission.WRITE_CONTACTS"
+      ]
+    },
     "web": {
       "favicon": "./assets/images/icon.png"
     },
@@ -34,6 +65,22 @@
         {
           "photosPermission": "This app analyzes your photos locally on device. Images are only sent to AI services for analysis when you add them.",
           "cameraPermission": "This app uses your camera to capture images for AI analysis. Photos are stored locally on device."
+        }
+      ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Used only to geotag photos you capture in-app. Never tracked in the background.",
+          "isAndroidBackgroundLocationEnabled": false,
+          "isAndroidForegroundServiceEnabled": false
+        }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow Image Intelligence to access your photos.",
+          "savePhotosPermission": "Allow Image Intelligence to save photos.",
+          "isAccessMediaLocationEnabled": true
         }
       ]
     ],

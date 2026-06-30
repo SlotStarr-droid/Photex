@@ -1,7 +1,8 @@
 import { Feather } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Haptics from "expo-haptics";
 import { useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Dimensions,
   Platform,
@@ -17,6 +18,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ImageCard } from "@/components/ImageCard";
 import { useImages } from "@/context/ImageContext";
 import { useColors } from "@/hooks/useColors";
+import { ONBOARDING_KEY } from "@/app/onboarding";
 
 const { width } = Dimensions.get("window");
 const COLS = 3;
@@ -30,6 +32,21 @@ export default function LibraryScreen() {
   const insets = useSafeAreaInsets();
   const [query, setQuery] = useState("");
 
+  // Check onboarding on first mount
+  useEffect(() => {
+    const check = async () => {
+      try {
+        const val = await AsyncStorage.getItem(ONBOARDING_KEY);
+        if (val !== "true") {
+          router.replace("/onboarding");
+        }
+      } catch {
+        // ignore — don't block on error
+      }
+    };
+    void check();
+  }, []);
+
   const filtered = useMemo(() => {
     if (!query.trim()) return images;
     const q = query.toLowerCase();
@@ -37,17 +54,21 @@ export default function LibraryScreen() {
       const tags = img.analysis?.tags?.join(" ") ?? "";
       const desc = img.analysis?.description ?? "";
       const scene = img.analysis?.scene?.type ?? "";
+      const fileName = img.metadata.fileName ?? "";
       return (
         tags.toLowerCase().includes(q) ||
         desc.toLowerCase().includes(q) ||
-        scene.toLowerCase().includes(q)
+        scene.toLowerCase().includes(q) ||
+        fileName.toLowerCase().includes(q)
       );
     });
   }, [images, query]);
 
   const stats = useMemo(() => {
     const complete = images.filter((i) => i.status === "complete").length;
-    const analyzing = images.filter((i) => i.status === "analyzing").length;
+    const analyzing = images.filter(
+      (i) => i.status === "analyzing" || i.status === "pending",
+    ).length;
     return { complete, analyzing, total: images.length };
   }, [images]);
 
@@ -56,31 +77,65 @@ export default function LibraryScreen() {
     router.push("/import");
   };
 
+  const handleSettings = () => {
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    router.push("/privacy");
+  };
+
   const topPad = Platform.OS === "web" ? 67 : insets.top;
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={[styles.header, { paddingTop: topPad + 12, backgroundColor: colors.background, borderBottomColor: colors.border }]}>
+      <View
+        style={[
+          styles.header,
+          {
+            paddingTop: topPad + 12,
+            backgroundColor: colors.background,
+            borderBottomColor: colors.border,
+          },
+        ]}
+      >
         <View style={styles.headerRow}>
-          <View>
-            <Text style={[styles.title, { color: colors.foreground }]}>Library</Text>
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.title, { color: colors.foreground }]}>
+              Library
+            </Text>
             <Text style={[styles.subtitle, { color: colors.mutedForeground }]}>
               {stats.total} image{stats.total !== 1 ? "s" : ""}
               {stats.analyzing > 0 ? ` · ${stats.analyzing} analyzing` : ""}
             </Text>
           </View>
-          <TouchableOpacity
-            style={[styles.addBtn, { backgroundColor: colors.primary }]}
-            onPress={handleImport}
-            activeOpacity={0.8}
-          >
-            <Feather name="plus" size={22} color="#fff" />
-          </TouchableOpacity>
+
+          <View style={styles.headerActions}>
+            <TouchableOpacity
+              style={[
+                styles.iconBtn,
+                { backgroundColor: colors.secondary },
+              ]}
+              onPress={handleSettings}
+              activeOpacity={0.8}
+            >
+              <Feather name="settings" size={18} color={colors.mutedForeground} />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.addBtn, { backgroundColor: colors.primary }]}
+              onPress={handleImport}
+              activeOpacity={0.8}
+            >
+              <Feather name="plus" size={22} color="#fff" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Search */}
-        <View style={[styles.searchBar, { backgroundColor: colors.secondary, borderColor: colors.border }]}>
+        <View
+          style={[
+            styles.searchBar,
+            { backgroundColor: colors.secondary, borderColor: colors.border },
+          ]}
+        >
           <Feather name="search" size={16} color={colors.mutedForeground} />
           <TextInput
             style={[styles.searchInput, { color: colors.foreground }]}
@@ -101,7 +156,10 @@ export default function LibraryScreen() {
       <ScrollView
         contentContainerStyle={[
           styles.grid,
-          { paddingBottom: insets.bottom + (Platform.OS === "web" ? 34 : 90) },
+          {
+            paddingBottom:
+              insets.bottom + (Platform.OS === "web" ? 34 : 90),
+          },
         ]}
         showsVerticalScrollIndicator={false}
       >
@@ -118,11 +176,19 @@ export default function LibraryScreen() {
             </Text>
             {images.length === 0 && (
               <TouchableOpacity
-                style={[styles.emptyBtn, { backgroundColor: colors.primary }]}
+                style={[
+                  styles.emptyBtn,
+                  { backgroundColor: colors.primary },
+                ]}
                 onPress={handleImport}
                 activeOpacity={0.8}
               >
-                <Text style={[styles.emptyBtnText, { color: colors.primaryForeground }]}>
+                <Text
+                  style={[
+                    styles.emptyBtnText,
+                    { color: colors.primaryForeground },
+                  ]}
+                >
                   Add Image
                 </Text>
               </TouchableOpacity>
@@ -155,6 +221,18 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 28, fontFamily: "Inter_700Bold" },
   subtitle: { fontSize: 13, fontFamily: "Inter_400Regular", marginTop: 2 },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  iconBtn: {
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   addBtn: {
     width: 44,
     height: 44,
@@ -191,7 +269,11 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   emptyTitle: { fontSize: 20, fontFamily: "Inter_600SemiBold" },
-  emptyText: { fontSize: 14, fontFamily: "Inter_400Regular", textAlign: "center" },
+  emptyText: {
+    fontSize: 14,
+    fontFamily: "Inter_400Regular",
+    textAlign: "center",
+  },
   emptyBtn: {
     marginTop: 8,
     paddingHorizontal: 24,

@@ -21,20 +21,6 @@ SplashScreen.preventAutoHideAsync();
 
 const queryClient = new QueryClient();
 
-function RootLayoutNav() {
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen
-        name="import"
-        options={{ presentation: "modal", headerShown: false }}
-      />
-      <Stack.Screen name="detail" options={{ headerShown: false }} />
-      <Stack.Screen name="investigation/[id]" options={{ headerShown: false }} />
-    </Stack>
-  );
-}
-
 export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts({
     Inter_400Regular,
@@ -59,7 +45,28 @@ export default function RootLayout() {
             <KeyboardProvider>
               <ImageProvider>
                 <PipelineProvider>
-                  <RootLayoutNav />
+                  <Stack screenOptions={{ headerShown: false }}>
+                    <Stack.Screen
+                      name="onboarding"
+                      options={{ headerShown: false, gestureEnabled: false }}
+                    />
+                    <Stack.Screen
+                      name="(tabs)"
+                      options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                      name="import"
+                      options={{ presentation: "modal", headerShown: false }}
+                    />
+                    <Stack.Screen
+                      name="detail"
+                      options={{ headerShown: false }}
+                    />
+                    <Stack.Screen
+                      name="investigation/[id]"
+                      options={{ headerShown: false }}
+                    />
+                  </Stack>
                 </PipelineProvider>
               </ImageProvider>
             </KeyboardProvider>
