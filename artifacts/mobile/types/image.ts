@@ -59,6 +59,7 @@ export interface AIAnalysis {
   safetyRating: string;
   model?: string;
   analyzedAt?: string;
+  templateId?: string;
   deviceMake?: string;
   deviceModel?: string;
   estimatedTimestamp?: string;
@@ -90,6 +91,7 @@ export interface StoredImage {
   base64?: string;
   metadata: ImageMetadata;
   analysis?: AIAnalysis;
+  analysisHistory?: AIAnalysis[];
   status: AnalysisStatus;
   error?: string;
   addedAt: string;
@@ -181,3 +183,39 @@ export interface Investigation {
   updatedAt: string;
   tags: string[];
 }
+
+// ─── Pipeline ────────────────────────────────────────────────────────────────
+
+export type ModelVersion = "gpt-4o" | "gpt-4o-mini";
+
+export interface PromptTemplate {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  focusAreas: string[];
+  builtIn: boolean;
+  systemPrompt: string;
+}
+
+export type JobStatus =
+  | "queued"
+  | "running"
+  | "completed"
+  | "failed"
+  | "cancelled";
+
+export interface ProcessingJob {
+  id: string;
+  imageId: string;
+  templateId: string;
+  modelVersion: ModelVersion;
+  status: JobStatus;
+  priority: number;
+  queuedAt: string;
+  startedAt?: string;
+  completedAt?: string;
+  error?: string;
+}
+
+export type PipelineStatus = "idle" | "running" | "paused";

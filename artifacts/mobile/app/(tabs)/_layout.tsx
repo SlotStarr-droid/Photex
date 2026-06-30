@@ -28,9 +28,9 @@ function NativeTabLayout() {
         <Icon sf={{ default: "folder.badge.questionmark", selected: "folder.fill.badge.questionmark" }} />
         <Label>Cases</Label>
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="privacy">
-        <Icon sf={{ default: "lock.shield", selected: "lock.shield.fill" }} />
-        <Label>Privacy</Label>
+      <NativeTabs.Trigger name="pipeline">
+        <Icon sf={{ default: "cpu", selected: "cpu" }} />
+        <Label>Pipeline</Label>
       </NativeTabs.Trigger>
     </NativeTabs>
   );
@@ -121,17 +121,18 @@ function ClassicTabLayout() {
         }}
       />
       <Tabs.Screen
-        name="privacy"
+        name="pipeline"
         options={{
-          title: "Privacy",
+          title: "Pipeline",
           tabBarIcon: ({ color }) =>
             isIOS ? (
-              <SymbolView name="lock.shield" tintColor={color} size={22} />
+              <SymbolView name="cpu" tintColor={color} size={22} />
             ) : (
-              <Feather name="shield" size={20} color={color} />
+              <Feather name="cpu" size={20} color={color} />
             ),
         }}
       />
+      <Tabs.Screen name="privacy" options={{ href: null }} />
     </Tabs>
   );
 }

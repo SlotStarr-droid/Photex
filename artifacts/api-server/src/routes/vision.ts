@@ -24,19 +24,7 @@ interface AnalysisResult {
   safetyRating: string;
 }
 
-router.post("/vision/analyze", async (req, res) => {
-  try {
-    const { imageBase64, mimeType = "image/jpeg" } = req.body as {
-      imageBase64: string;
-      mimeType?: string;
-    };
-
-    if (!imageBase64) {
-      res.status(400).json({ error: "imageBase64 is required" });
-      return;
-    }
-
-    const prompt = `Analyze this image thoroughly and return a JSON object with the following structure. Be precise and honest about confidence levels (0.0 to 1.0). Never claim certainty about inferred information.
+const DEFAULT_PROMPT = `Analyze this image thoroughly and return a JSON object with the following structure. Be precise and honest about confidence levels (0.0 to 1.0). Never claim certainty about inferred information.
 
 Return ONLY valid JSON with this exact structure:
 {
@@ -60,8 +48,39 @@ Return ONLY valid JSON with this exact structure:
 
 For inferences, include estimates for: time of day, season/weather, location type, camera/device type, image purpose, and any other contextually interesting attributes. Always flag these as inferred, not verified. Use confidence scores honestly - if unsure, use lower scores (< 0.5).`;
 
+const ALLOWED_MODELS = ["gpt-4o", "gpt-4o-mini"] as const;
+type AllowedModel = (typeof ALLOWED_MODELS)[number];
+
+function isAllowedModel(m: unknown): m is AllowedModel {
+  return typeof m === "string" && (ALLOWED_MODELS as readonly string[]).includes(m);
+}
+
+router.post("/vision/analyze", async (req, res) => {
+  try {
+    const {
+      imageBase64,
+      mimeType = "image/jpeg",
+      model,
+      systemPrompt,
+    } = req.body as {
+      imageBase64: string;
+      mimeType?: string;
+      model?: unknown;
+      systemPrompt?: string;
+    };
+
+    if (!imageBase64) {
+      res.status(400).json({ error: "imageBase64 is required" });
+      return;
+    }
+
+    const resolvedModel: AllowedModel = isAllowedModel(model) ? model : "gpt-4o";
+    const resolvedPrompt = typeof systemPrompt === "string" && systemPrompt.trim().length > 0
+      ? systemPrompt
+      : DEFAULT_PROMPT;
+
     const response = await openai.chat.completions.create({
-      model: "gpt-4o",
+      model: resolvedModel,
       max_tokens: 2000,
       messages: [
         {
@@ -76,7 +95,7 @@ For inferences, include estimates for: time of day, season/weather, location typ
             },
             {
               type: "text",
-              text: prompt,
+              text: resolvedPrompt,
             },
           ],
         },
@@ -91,11 +110,17 @@ For inferences, include estimates for: time of day, season/weather, location typ
       if (!jsonMatch) throw new Error("No JSON found in response");
       analysis = JSON.parse(jsonMatch[0]) as AnalysisResult;
     } catch {
-      res.status(500).json({ error: "Failed to parse AI response", raw: content });
+      res
+        .status(500)
+        .json({ error: "Failed to parse AI response", raw: content });
       return;
     }
 
-    res.json({ analysis, model: "gpt-4o", analyzedAt: new Date().toISOString() });
+    res.json({
+      analysis,
+      model: resolvedModel,
+      analyzedAt: new Date().toISOString(),
+    });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Unknown error";
     req.log.error({ err }, "Vision analysis failed");
