@@ -390,7 +390,7 @@ export default function DetailScreen() {
                 </Text>
               </View>
               {a?.inferences?.length ? (
-                a.inferences.map((inf, i) => <InferencePill key={i} inference={inf} />)
+                a.inferences.map((inf, i) => <InferencePill key={i} inference={inf} imageId={image.id} />)
               ) : (
                 <Text style={[styles.emptyMsg, { color: colors.mutedForeground }]}>
                   No inferences available yet.

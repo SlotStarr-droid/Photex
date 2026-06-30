@@ -28,10 +28,8 @@ function RootLayoutNav() {
         name="import"
         options={{ presentation: "modal", headerShown: false }}
       />
-      <Stack.Screen
-        name="detail"
-        options={{ headerShown: false }}
-      />
+      <Stack.Screen name="detail" options={{ headerShown: false }} />
+      <Stack.Screen name="investigation/[id]" options={{ headerShown: false }} />
     </Stack>
   );
 }

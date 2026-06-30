@@ -16,6 +16,18 @@ function NativeTabLayout() {
         <Icon sf={{ default: "photo.stack", selected: "photo.stack.fill" }} />
         <Label>Library</Label>
       </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="graph">
+        <Icon sf={{ default: "point.3.connected.trianglepath.dotted", selected: "point.3.connected.trianglepath.dotted" }} />
+        <Label>Graph</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="timeline">
+        <Icon sf={{ default: "timeline.selection", selected: "timeline.selection" }} />
+        <Label>Timeline</Label>
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger name="investigate">
+        <Icon sf={{ default: "folder.badge.questionmark", selected: "folder.fill.badge.questionmark" }} />
+        <Label>Cases</Label>
+      </NativeTabs.Trigger>
       <NativeTabs.Trigger name="privacy">
         <Icon sf={{ default: "lock.shield", selected: "lock.shield.fill" }} />
         <Label>Privacy</Label>
@@ -57,6 +69,7 @@ function ClassicTabLayout() {
               style={[StyleSheet.absoluteFill, { backgroundColor: colors.background }]}
             />
           ) : null,
+        tabBarLabelStyle: { fontSize: 10, fontFamily: "Inter_500Medium" },
       }}
     >
       <Tabs.Screen
@@ -65,9 +78,45 @@ function ClassicTabLayout() {
           title: "Library",
           tabBarIcon: ({ color }) =>
             isIOS ? (
-              <SymbolView name="photo.stack" tintColor={color} size={24} />
+              <SymbolView name="photo.stack" tintColor={color} size={22} />
             ) : (
-              <Feather name="grid" size={22} color={color} />
+              <Feather name="grid" size={20} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="graph"
+        options={{
+          title: "Graph",
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="point.3.connected.trianglepath.dotted" tintColor={color} size={22} />
+            ) : (
+              <Feather name="share-2" size={20} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="timeline"
+        options={{
+          title: "Timeline",
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="clock" tintColor={color} size={22} />
+            ) : (
+              <Feather name="clock" size={20} color={color} />
+            ),
+        }}
+      />
+      <Tabs.Screen
+        name="investigate"
+        options={{
+          title: "Cases",
+          tabBarIcon: ({ color }) =>
+            isIOS ? (
+              <SymbolView name="folder.badge.questionmark" tintColor={color} size={22} />
+            ) : (
+              <Feather name="folder" size={20} color={color} />
             ),
         }}
       />
@@ -77,9 +126,9 @@ function ClassicTabLayout() {
           title: "Privacy",
           tabBarIcon: ({ color }) =>
             isIOS ? (
-              <SymbolView name="lock.shield" tintColor={color} size={24} />
+              <SymbolView name="lock.shield" tintColor={color} size={22} />
             ) : (
-              <Feather name="shield" size={22} color={color} />
+              <Feather name="shield" size={20} color={color} />
             ),
         }}
       />
