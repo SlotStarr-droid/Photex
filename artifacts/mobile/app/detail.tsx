@@ -254,6 +254,12 @@ export default function DetailScreen() {
 
           {section === "metadata" && (
             <View style={styles.section}>
+              <View style={[styles.metaNotice, { backgroundColor: colors.accent, borderColor: colors.primary + "40" }]}>
+                <Feather name="check-circle" size={15} color={colors.primary} />
+                <Text style={[styles.metaNoticeText, { color: colors.accentForeground }]}>
+                  VERIFIED: Extracted from file metadata and attributes
+                </Text>
+              </View>
               <Text style={[styles.sectionTitle, { color: colors.foreground }]}>File Information</Text>
               <View style={[styles.metaCard, { borderColor: colors.border }]}>
                 {image.metadata.fileName && (
@@ -300,6 +306,27 @@ export default function DetailScreen() {
                           value={String(v)}
                         />
                       ))}
+                  </View>
+                </>
+              )}
+              {(image.metadata.md5Hash || image.metadata.sha256Hash) && (
+                <>
+                  <Text style={[styles.sectionTitle, { color: colors.foreground, marginTop: 16 }]}>
+                    Cryptographic Hashes
+                  </Text>
+                  <View style={[styles.metaCard, { borderColor: colors.border }]}>
+                    {image.metadata.md5Hash && (
+                      <MetadataRow
+                        label="MD5"
+                        value={image.metadata.md5Hash.substring(0, 16) + "..."}
+                      />
+                    )}
+                    {image.metadata.sha256Hash && (
+                      <MetadataRow
+                        label="SHA-256"
+                        value={image.metadata.sha256Hash.substring(0, 16) + "..."}
+                      />
+                    )}
                   </View>
                 </>
               )}
@@ -506,4 +533,14 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   inferenceNoticeText: { flex: 1, fontSize: 13, fontFamily: "Inter_500Medium", lineHeight: 18 },
+  metaNotice: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: 8,
+    padding: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginBottom: 12,
+  },
+  metaNoticeText: { flex: 1, fontSize: 13, fontFamily: "Inter_500Medium", lineHeight: 18 },
 });

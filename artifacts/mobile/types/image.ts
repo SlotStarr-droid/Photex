@@ -11,6 +11,13 @@ export interface ImageMetadata {
   deviceMake?: string;
   deviceModel?: string;
   exif?: Record<string, unknown>;
+  // Cryptographic hashes for duplicate detection and forensics
+  md5Hash?: string;
+  sha1Hash?: string;
+  sha256Hash?: string;
+  // IPTC and XMP metadata
+  iptc?: Record<string, unknown>;
+  xmp?: Record<string, unknown>;
 }
 
 export interface DetectedObject {
@@ -45,6 +52,18 @@ export interface Inference {
   value: string;
   confidence: number;
   reasoning: string;
+  evidence?: string[];
+}
+
+export interface LogoInfo {
+  name: string;
+  confidence: number;
+}
+
+export interface LandmarkInfo {
+  name: string;
+  confidence: number;
+  location?: string;
 }
 
 export interface AIAnalysis {
@@ -54,6 +73,8 @@ export interface AIAnalysis {
   text: DetectedText[];
   colors: ColorInfo[];
   faces: FaceInfo;
+  logos?: LogoInfo[];
+  landmarks?: LandmarkInfo[];
   inferences: Inference[];
   tags: string[];
   safetyRating: string;

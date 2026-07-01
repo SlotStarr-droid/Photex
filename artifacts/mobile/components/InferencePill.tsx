@@ -44,6 +44,23 @@ export function InferencePill({ inference, imageId }: Props) {
             <Text style={[styles.reasoningText, { color: colors.mutedForeground }]}>
               {inference.reasoning}
             </Text>
+            {inference.evidence && inference.evidence.length > 0 && (
+              <View style={styles.evidenceSection}>
+                <Text style={[styles.evidenceLabel, { color: colors.mutedForeground }]}>
+                  Supporting Evidence
+                </Text>
+                <View style={styles.evidenceList}>
+                  {inference.evidence.map((item, idx) => (
+                    <View key={idx} style={styles.evidenceItem}>
+                      <Text style={[styles.evidenceBullet, { color: colors.mutedForeground }]}>•</Text>
+                      <Text style={[styles.evidenceText, { color: colors.mutedForeground }]}>
+                        {item}
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              </View>
+            )}
             <TouchableOpacity
               style={[styles.correctBtn, { borderColor: colors.border, backgroundColor: colors.secondary }]}
               onPress={(e) => { e.stopPropagation(); setCorrecting(true); }}
@@ -110,4 +127,10 @@ const styles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   correctText: { fontSize: 12, fontFamily: "Inter_500Medium" },
+  evidenceSection: { gap: 8 },
+  evidenceLabel: { fontSize: 11, fontFamily: "Inter_600SemiBold", textTransform: "uppercase", letterSpacing: 0.5 },
+  evidenceList: { gap: 6 },
+  evidenceItem: { flexDirection: "row", gap: 6, alignItems: "flex-start" },
+  evidenceBullet: { fontSize: 12, fontFamily: "Inter_500Medium", marginTop: 2 },
+  evidenceText: { fontSize: 12, fontFamily: "Inter_400Regular", lineHeight: 16, flex: 1 },
 });
