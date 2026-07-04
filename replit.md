@@ -1,21 +1,19 @@
-# Image Intelligence
+# Photex: Local-Only Mobile Intelligence Platform
 
-An Android-primary mobile intelligence platform that ingests photos via camera or gallery, extracts real EXIF metadata (GPS, device, timestamp), runs GPT-4o vision analysis, builds a knowledge graph, timeline, and investigation workspace. Privacy-first: all data stays on-device in AsyncStorage; only AI analysis calls leave the device.
+An Android-primary mobile intelligence platform for ingesting photos via camera or gallery, extracting real EXIF metadata (GPS, device, timestamp), and running GPT-4o vision analysis—all locally on device with zero backend dependency.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
+- `pnpm --filter @workspace/mobile run dev` — dev server with Expo Metro bundler (Replit)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas
-- Required env: `OPENAI_API_KEY` — for GPT-4o analysis, `SESSION_SECRET` — express sessions
+- Required env: `OPENAI_API_KEY` — for GPT-4o analysis (direct mobile API calls)
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
 - Mobile: Expo ~54, React Native 0.81.5, expo-router v6, AsyncStorage
-- API: Express 5, esbuild bundle (port 8080)
-- AI: GPT-4o / GPT-4o-mini via `/api/vision/analyze`
+- AI: GPT-4o / GPT-4o-mini via direct OpenAI SDK (no backend)
 - Native modules: expo-image-picker, expo-location, expo-media-library, expo-camera
 
 ## Where things live
@@ -25,20 +23,20 @@ An Android-primary mobile intelligence platform that ingests photos via camera o
 - `artifacts/mobile/app/import.tsx` — camera + gallery import with real EXIF parsing
 - `artifacts/mobile/app/(tabs)/privacy.tsx` — Settings screen (live permission status, data management)
 - `artifacts/mobile/utils/exif.ts` — Real EXIF GPS parser (handles iOS decimal + Android DMS rational)
-- `artifacts/mobile/utils/analyze.ts` — GPT-4o image analysis client
+- `artifacts/mobile/utils/analyze.ts` — Direct OpenAI image analysis client (local to mobile)
 - `artifacts/mobile/context/PipelineContext.tsx` — batch AI processing queue
 - `artifacts/mobile/context/ImageContext.tsx` — primary image store (AsyncStorage)
 - `artifacts/mobile/types/image.ts` — canonical type definitions
-- `artifacts/api-server/src/routes/vision.ts` — `/api/vision/analyze` endpoint
 
 ## Architecture decisions
 
-- **Privacy-first local storage**: AsyncStorage only; no cloud sync, no telemetry
+- **Local-only execution**: All image analysis runs on device; no backend server required
+- **Privacy-first**: AsyncStorage only; no cloud sync, no telemetry, no login/auth
+- **Direct OpenAI integration**: Mobile app calls OpenAI API directly (API key in env)
 - **EXIF-first metadata**: GPS/device/timestamp extracted from EXIF before AI, not guessed by AI
 - **Android primary**: `android.package`, full Android permissions array, adaptive icon, expo-location foreground-only, `READ_MEDIA_IMAGES` for Android 13+
 - **Onboarding gates permissions**: first-launch walkthrough requests camera/library/location with live status; tracked via `onboarding_v1_complete` AsyncStorage key
 - **Settings via gear icon**: privacy/settings is a hidden tab route (`href: null`) accessed from Library header gear button — keeps tab bar at 5 items
-- **AI analysis is the only outbound network call**: enforced by API server; image sent as base64 URL; model validated against allowlist (gpt-4o, gpt-4o-mini)
 
 ## Product
 
@@ -62,10 +60,11 @@ Blocked: `RECORD_AUDIO`, `READ_CONTACTS`, `WRITE_CONTACTS`
 
 ## User preferences
 
-- Android-primary, privacy-first
+- Android-primary, privacy-first, fully local
 - Real EXIF extraction (not simulated GPS or device info)
 - No mock data anywhere in the app
 - All simulated toggles removed
+- No login or authentication required
 
 ## Gotchas
 
@@ -74,8 +73,26 @@ Blocked: `RECORD_AUDIO`, `READ_CONTACTS`, `WRITE_CONTACTS`
 - The onboarding check lives in `(tabs)/index.tsx` `useEffect` (not `_layout.tsx`) because expo-router Redirect only works inside route components
 - EXIF GPS on Android comes as DMS rational strings like `"37/1,26/1,42600/1000"` — the parser in `utils/exif.ts` handles both iOS decimal and Android DMS formats
 - Do NOT run `pnpm dev` at workspace root — use workflow restart or Expo Go QR scan
+- `OPENAI_API_KEY` must be set as env var; the mobile app loads it from `process.env.OPENAI_API_KEY`
 
-## Pointers
+## Verification
 
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+```bash
+# Check Expo setup
+cd artifacts/mobile && npx expo doctor
+
+# Audit dependencies for vulnerabilities
+pnpm audit
+
+# Full typecheck
+pnpm run typecheck
+
+# Build all packages
+pnpm run build
+```
+
+## References
+
 - See `utils/exif.ts` for GPS/device/timestamp EXIF parsing (handles all platform edge cases)
+- See `utils/analyze.ts` for direct OpenAI client integration
+- See `context/PipelineContext.tsx` for batch processing queue logic
